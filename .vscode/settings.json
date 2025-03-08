@@ -1,0 +1,7 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll.shellcheck": "explicit"
+  },
+  "editor.rulers": [80],
+  "shellcheck.exclude": ["2155"]
+}
