@@ -6,23 +6,22 @@ Usage: account.sh [OPTIONS]\n
 Options:
   -d <FILE>          Dump headers to file
   -b                 Show balance
-  -H                 Print help\n
+  -h                 Print help\n
 Environment Variables:
   STABILITY_API_KEY  Your Stability API key (required)
 EOF
 
   local show_balance=false
-  local print_help=false
   local dump_file=''
 
-  while getopts "d:bH" opt ; do
+  while getopts "d:bh" opt ; do
     case $opt in
       d)
         dump_file="$OPTARG" ;;
       b)
         show_balance=true ;;
-      H)
-        print_help=true ;;
+      h)
+        echo -e "$help" ; exit 0 ;;
       *)
         exit 1 ;;
     esac
@@ -40,11 +39,6 @@ EOF
   local curl_opts=(-sSL -X GET)
   if [[ -n $dump_file ]] ; then
     curl_opts+=(-D "$dump_file")
-  fi
-
-  if [[ $print_help == true ]] ; then
-    echo -e "$help"
-    exit 0
   fi
 
   local token=${STABILITY_API_KEY:-''}

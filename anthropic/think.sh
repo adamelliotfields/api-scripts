@@ -12,7 +12,7 @@ Options:
   -t <TOKENS>        Maximum tokens to generate [default: 2048]
   -b <BUDGET>        Budget for thinking tokens [default: 1024]
   -d <FILE>          Dump headers to file
-  -H                 Print help\n
+  -h                 Print help\n
 Environment Variables:
   ANTHROPIC_API_KEY  Your Anthropic API key (required)
 EOF
@@ -24,9 +24,8 @@ EOF
   local max_tokens=2048
   local budget_tokens=1024
   local dump_file=''
-  local print_help=false
 
-  while getopts "s:t:b:d:H" opt ; do
+  while getopts "s:t:b:d:h" opt ; do
     case $opt in
       s)
         system="$OPTARG" ;;
@@ -36,8 +35,8 @@ EOF
         budget_tokens="$OPTARG" ;;
       d)
         dump_file="$OPTARG" ;;
-      H)
-        print_help=true ;;
+      h)
+        echo -e "$help" ; exit 0 ;;
       *)
         exit 1 ;;
     esac
@@ -48,11 +47,6 @@ EOF
   local prompt=${1:-''}
   local token=${ANTHROPIC_API_KEY:-''}
   local url='https://api.anthropic.com/v1/messages'
-
-  if [[ $print_help == true ]] ; then
-    echo -e "$help"
-    exit 0
-  fi
 
   if [[ -z $token ]] ; then
     echo "$0: ANTHROPIC_API_KEY not set" >&2

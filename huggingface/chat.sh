@@ -12,7 +12,7 @@ Options:
   -t <TOKENS>  Max tokens to generate [default: 1024]
   -d <FILE>    Dump headers to file
   -u           Unbuffered (streaming) output from the API
-  -H           Print help\n
+  -h           Print help\n
 Environment Variables:
   HF_TOKEN     Your Hugging Face API token (required)
 EOF
@@ -21,11 +21,10 @@ EOF
   local system='Be precise and concise.'
   local accept='application/json'
   local max_tokens=1024
-  local print_help=false
   local stream=false
   local dump_file=''
 
-  while getopts "m:s:t:d:uH" opt ; do
+  while getopts "m:s:t:d:uh" opt ; do
     case $opt in
       m)
         model="$OPTARG" ;;
@@ -37,8 +36,8 @@ EOF
         dump_file="$OPTARG" ;;
       u)
         stream=true ; accept='text/event-stream' ;;
-      H)
-        print_help=true ;;
+      h)
+        echo -e "$help" ; exit 0 ;;
       *)
         exit 1 ;;
     esac
@@ -49,11 +48,6 @@ EOF
   local prompt=${1:-''}
   local token=${HF_TOKEN:-''}
   local url="https://api-inference.huggingface.co/models/${model}/v1/chat/completions"
-
-  if [[ $print_help == true ]] ; then
-    echo -e "$help"
-    exit 0
-  fi
 
   if [[ -z $token ]] ; then
     echo "$0: HF_TOKEN not set" >&2

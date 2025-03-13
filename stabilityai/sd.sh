@@ -15,7 +15,7 @@ Options:
   -i <STEPS>         Number of inference steps [default: 30]
   -s <SEED>          Random seed to use [default: 0]
   -d <DUMP_FILE>     Dump headers to file
-  -H                 Print help\n
+  -h                 Print help\n
 Environment Variables:
   STABILITY_API_KEY  Your Stability API key (required)
 EOF

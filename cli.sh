@@ -7,10 +7,9 @@ Arguments:
   [PROVIDER]  Optional provider to filter by\n
 Options:
   -l          List providers
-  -H          Print help
+  -h          Print help
 EOF
 
-  local print_help=0
   local list_providers=0
   local bat_opts='-pp --color=always'
   local fd_opts=(-E .devcontainer -E .vscode)
@@ -23,12 +22,12 @@ EOF
     --bind='enter:execute(echo ./{})+abort'
   )
 
-  while getopts ":lH" opt ; do
+  while getopts ":lh" opt ; do
     case $opt in
       l)
         list_providers=1 ;;
-      H)
-        print_help=1 ;;
+      h)
+        echo -e "$help" ; exit 0 ;;
       # opt will be set to `:` for missing arguments
       :)
         echo "$0: option requires an argument -- $OPTARG" >&2 ; exit 1 ;;
@@ -41,12 +40,6 @@ EOF
   # remove parsed options from positional parameters
   # use double parens for arithmetic
   shift $((OPTIND - 1))
-
-  # help
-  if [[ $print_help -eq 1 ]] ; then
-    echo -e "$help"
-    exit 0
-  fi
 
   # list providers
   if [[ $list_providers -eq 1 ]] ; then

@@ -27,10 +27,10 @@ export STABILITY_API_KEY=sk-...
 
 ## Usage
 
-Each script is self-contained and executable with `getopts` for portability. All use `-H` for help, for example:
+Each script is self-contained and executable with `getopts` for portability. All use `-h` for help, for example:
 
 ```
-$ ./openai/chat.sh -H
+$ ./openai/chat.sh -h
 
 Chat with a language model
 
@@ -47,7 +47,7 @@ Options:
   -t <TOKENS>     Maximum tokens to generate [default: 1024]
   -d <FILE>       Dump headers to file
   -u              Unbuffered (streaming) output from the API
-  -H              Print help
+  -h              Print help
 
 Environment Variables:
   OPENAI_API_KEY  Your OpenAI API key (required)

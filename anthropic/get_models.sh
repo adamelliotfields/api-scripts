@@ -7,23 +7,22 @@ Usage: get_models.sh [OPTIONS]\n
 Options:
   -m <MODEL>         Model to use
   -d <FILE>          Dump headers to file
-  -H                 Print help\n
+  -h                 Print help\n
 Environment Variables:
   ANTHROPIC_API_KEY  Your Anthropic API key (required)
 EOF
 
   local model=''
   local dump_file=''
-  local print_help=false
 
-  while getopts "m:d:H" opt ; do
+  while getopts "m:d:h" opt ; do
     case $opt in
       m)
         model="$OPTARG" ;;
       d)
         dump_file="$OPTARG" ;;
-      H)
-        print_help=true ;;
+      h)
+        echo -e "$help" ; exit 0 ;;
       *)
         exit 1 ;;
     esac
@@ -33,11 +32,6 @@ EOF
 
   local token=${ANTHROPIC_API_KEY:-''}
   local url="https://api.anthropic.com/v1/models"
-
-  if [[ $print_help == true ]] ; then
-    echo -e "$help"
-    exit 0
-  fi
 
   if [[ -z $token ]] ; then
     echo "$0: ANTHROPIC_API_KEY not set" >&2
