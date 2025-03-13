@@ -8,35 +8,33 @@ Usage: sdxl.sh [OPTIONS] <PROMPT>\n
 Arguments:
   <PROMPT>           The text to send to the model\n
 Options:
+  -a <ASPECT_RATIO>  Aspect ratio of the image [default: 1:1]
+                     [possible values: 1:1, 16:9, 9:16, 7:4, 4:7, 12:5, 5:12]
   -o <OUT_FILE>      File to save the image to [default: image.png]
-  -w <WIDTH>         Width of the image [default: 1024] [possible values: 1024, 1152, 896, 1344, 768, 1536, 640]
-  -h <HEIGHT>        Height of the image [default: 1024] [possible values: 1024, 1152, 896, 1344, 768, 1536, 640]
   -g <GUIDANCE>      Guidance scale [default: 7]
   -i <STEPS>         Number of inference steps [default: 30]
   -s <SEED>          Random seed to use [default: 0]
   -d <DUMP_FILE>     Dump headers to file
-  -H                 Print help\n
+  -h                 Print help\n
 Environment Variables:
   STABILITY_API_KEY  Your Stability API key (required)
 EOF
 
-  local file='image.png'
+  local aspect_ratio='1:1'
   local width=1024
   local height=1024
+  local file='image.png'
   local guidance=7
   local steps=30
   local seed=0
   local dump_file=''
-  local print_help=false
 
-  while getopts "o:w:h:g:i:s:d:H" opt ; do
+  while getopts "a:o:g:i:s:d:h" opt ; do
     case $opt in
+      a)
+        aspect_ratio="$OPTARG" ;;
       o)
         file="$OPTARG" ;;
-      w)
-        width="$OPTARG" ;;
-      h)
-        height="$OPTARG" ;;
       g)
         guidance="$OPTARG" ;;
       i)
@@ -45,23 +43,38 @@ EOF
         seed="$OPTARG" ;;
       d)
         dump_file="$OPTARG" ;;
-      H)
-        print_help=true ;;
+      h)
+        echo -e "$help" ; exit 0 ;;
       *)
         exit 1 ;;
     esac
   done
+
+  # Set dimensions based on aspect ratio.
+  case $aspect_ratio in
+    1:1)
+      width=1024 ; height=1024 ;;
+    16:9)
+      width=1152 ; height=896  ;;
+    9:16)
+      width=896  ; height=1152 ;;
+    7:4)
+      width=1344 ; height=768  ;;
+    4:7)
+      width=768  ; height=1344 ;;
+    12:5)
+      width=1536 ; height=640  ;;
+    5:12)
+      width=640  ; height=1536 ;;
+    *)
+      echo "$0: Invalid aspect ratio '$aspect_ratio'" >&2 ; exit 1 ;;
+  esac
 
   shift $((OPTIND - 1))
 
   local prompt=${1:-''}
   local token=${STABILITY_API_KEY:-''}
   local url="https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image"
-
-  if [[ $print_help == true ]] ; then
-    echo -e "$help"
-    exit 0
-  fi
 
   if [[ -z $token ]] ; then
     echo "$0: STABILITY_API_KEY not set" >&2
@@ -85,7 +98,6 @@ EOF
     -H 'Accept: image/png'
   )
 
-  # Dimensions must be one of: 1024x1024, 1152x896, 896x1152, 1344x768, 768x1344, 1536x640, 640x1536
   # Steps over 30 cost more credits.
   # Use `0` for random seed.
   local body='{

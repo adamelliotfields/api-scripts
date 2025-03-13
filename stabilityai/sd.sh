@@ -8,9 +8,9 @@ Usage: sd.sh [OPTIONS] <PROMPT>\n
 Arguments:
   <PROMPT>           The text to send to the model\n
 Options:
+  -a <ASPECT_RATIO>  Aspect ratio of the image [default: 1:1]
+                     [possible values: 1:1, 16:9, 9:16, 7:4, 4:7, 12:5, 5:12]
   -o <OUT_FILE>      File to save the image to [default: image.png]
-  -w <WIDTH>         Width of the image [default: 512]
-  -h <HEIGHT>        Height of the image [default: 512]
   -g <GUIDANCE>      Guidance scale [default: 7]
   -i <STEPS>         Number of inference steps [default: 30]
   -s <SEED>          Random seed to use [default: 0]
@@ -20,23 +20,21 @@ Environment Variables:
   STABILITY_API_KEY  Your Stability API key (required)
 EOF
 
+  local aspect_ratio='1:1'
+  local width=1024
+  local height=1024
   local file='image.png'
-  local width=512
-  local height=512
   local guidance=7
   local steps=30
   local seed=0
   local dump_file=''
-  local print_help=false
 
-  while getopts "o:w:h:g:i:s:d:H" opt ; do
+  while getopts "a:o:g:i:s:d:h" opt ; do
     case $opt in
+      a)
+        aspect_ratio="$OPTARG" ;;
       o)
         file="$OPTARG" ;;
-      w)
-        width="$OPTARG" ;;
-      h)
-        height="$OPTARG" ;;
       g)
         guidance="$OPTARG" ;;
       i)
@@ -45,23 +43,38 @@ EOF
         seed="$OPTARG" ;;
       d)
         dump_file="$OPTARG" ;;
-      H)
-        print_help=true ;;
+      h)
+        echo -e "$help" ; exit 0 ;;
       *)
         exit 1 ;;
     esac
   done
+
+  # Set dimensions based on aspect ratio.
+  case $aspect_ratio in
+    1:1)
+      width=512 ; height=512 ;;
+    16:9)
+      width=576 ; height=448 ;;
+    9:16)
+      width=448 ; height=576 ;;
+    7:4)
+      width=672 ; height=384 ;;
+    4:7)
+      width=384 ; height=672 ;;
+    12:5)
+      width=768 ; height=320 ;;
+    5:12)
+      width=320 ; height=768 ;;
+    *)
+      echo "$0: Invalid aspect ratio '$aspect_ratio'" >&2 ; exit 1 ;;
+  esac
 
   shift $((OPTIND - 1))
 
   local prompt=${1:-''}
   local token=${STABILITY_API_KEY:-''}
   local url="https://api.stability.ai/v1/generation/stable-diffusion-v1-6/text-to-image"
-
-  if [[ $print_help == true ]] ; then
-    echo -e "$help"
-    exit 0
-  fi
 
   if [[ -z $token ]] ; then
     echo "$0: STABILITY_API_KEY not set" >&2
@@ -85,7 +98,6 @@ EOF
     -H 'Accept: image/png'
   )
 
-  # Dimensions must be between 320 and 1536 and divisible by 64.
   # Steps over 30 cost more credits.
   # Use `0` for random seed.
   local body='{

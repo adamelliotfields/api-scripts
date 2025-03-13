@@ -5,45 +5,45 @@ Generate an image from a text prompt.\n
 https://huggingface.co/docs/api-inference/en/tasks/text-to-image\n
 Usage: text_to_image.sh [OPTIONS] <PROMPT>\n
 Arguments:
-  <PROMPT>        The text to send to the model\n
+  <PROMPT>           The text to send to the model\n
 Options:
-  -m <MODEL>      Model to use [default: stabilityai/stable-diffusion-3.5-large-turbo]
-  -o <OUT_FILE>   File to save the image to [default: image.jpg]
-  -n <NEGATIVE>   Negative prompt to use
-  -w <WIDTH>      Width of the image
-  -h <HEIGHT>     Height of the image
-  -g <GUIDANCE>   Guidance scale
-  -i <STEPS>      Number of inference steps
-  -s <SEED>       Random seed to use
-  -d <DUMP_FILE>  Dump headers to file
-  -H              Print help\n
+  -a <ASPECT_RATIO>  Aspect ratio of the image [default: 1:1]
+                     [possible values: 1:1, 16:9, 9:16, 7:4, 4:7, 12:5, 5:12]
+  -m <MODEL>         Model to use [default: stabilityai/stable-diffusion-3.5-large-turbo]
+  -o <OUT_FILE>      File to save the image to [default: image.jpg]
+  -n <NEGATIVE>      Negative prompt to use
+  -w <WIDTH>         Width of the image
+  -h <HEIGHT>        Height of the image
+  -g <GUIDANCE>      Guidance scale
+  -i <STEPS>         Number of inference steps
+  -s <SEED>          Random seed to use
+  -d <DUMP_FILE>     Dump headers to file
+  -h                 Print help\n
 Environment Variables:
-  HF_TOKEN        Your Hugging Face API token (required)
+  HF_TOKEN           Your Hugging Face API token (required)
 EOF
 
+  local aspect_ratio='1:1'
+  local width=1024
+  local height=1024
   local model='stabilityai/stable-diffusion-3.5-large-turbo'
   local file='image.jpg'
   local negative=''
-  local width=''
-  local height=''
   local guidance=''
   local steps=''
   local seed=''
   local dump_file=''
-  local print_help=false
 
-  while getopts "m:o:n:w:h:g:i:s:d:H" opt ; do
+  while getopts "a:m:o:n:g:i:s:d:h" opt ; do
     case $opt in
+      a)
+        aspect_ratio="$OPTARG" ;;
       m)
         model="$OPTARG" ;;
       o)
         file="$OPTARG" ;;
       n)
         negative="$OPTARG" ;;
-      w)
-        width="$OPTARG" ;;
-      h)
-        height="$OPTARG" ;;
       g)
         guidance="$OPTARG" ;;
       i)
@@ -52,23 +52,38 @@ EOF
         seed="$OPTARG" ;;
       d)
         dump_file="$OPTARG" ;;
-      H)
-        print_help=true ;;
+      h)
+        echo -e "$help" ; exit 0 ;;
       *)
         exit 1 ;;
     esac
   done
+
+  # Set dimensions based on aspect ratio.
+  case $aspect_ratio in
+    1:1)
+      width=1024 ; height=1024 ;;
+    16:9)
+      width=1152 ; height=896  ;;
+    9:16)
+      width=896  ; height=1152 ;;
+    7:4)
+      width=1344 ; height=768  ;;
+    4:7)
+      width=768  ; height=1344 ;;
+    12:5)
+      width=1536 ; height=640  ;;
+    5:12)
+      width=640  ; height=1536 ;;
+    *)
+      echo "$0: Invalid aspect ratio '$aspect_ratio'" >&2 ; exit 1 ;;
+  esac
 
   shift $((OPTIND - 1))
 
   local prompt=${1:-''}
   local token=${HF_TOKEN:-''}
   local url="https://api-inference.huggingface.co/models/${model}"
-
-  if [[ $print_help == true ]] ; then
-    echo -e "$help"
-    exit 0
-  fi
 
   if [[ -z $token ]] ; then
     echo "$0: HF_TOKEN not set" >&2

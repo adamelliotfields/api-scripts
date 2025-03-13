@@ -7,35 +7,36 @@ Usage: sd3.sh [OPTIONS] <PROMPT>\n
 Arguments:
   <PROMPT>              The text to send to the model\n
 Options:
-  -m <MODEL>            Model to use [default: sd3.5-large-turbo] [possible values: sd3.5-large, sd3.5-large-turbo, sd3.5-medium, sd3-large, sd3-large-turbo, sd3-medium]
+  -m <MODEL>            Model to use [default: sd3.5-large-turbo]
+                        [possible values: sd3.5-large, sd3.5-large-turbo, sd3.5-medium, sd3-large, sd3-large-turbo, sd3-medium]
+  -a <ASPECT_RATIO>     Aspect ratio of the image [default: 1:1]
+                        [possible values: 16:9, 1:1, 21:9, 2:3, 3:2, 4:5, 5:4, 9:16, 9:21]
   -o <OUT_FILE>         File to save the image to [default: image.png]
-  -a <ASPECT_RATIO>     Aspect ratio of the image [default: 1:1] [possible values: 16:9, 1:1, 21:9, 2:3, 3:2, 4:5, 5:4, 9:16, 9:21]
   -g <GUIDANCE_SCALE>   Guidance scale [default: 1.0]
   -s <SEED>             Random seed to use [default: 0]
   -n <NEGATIVE_PROMPT>  Negative prompt to use (non-turbo models only)
   -d <DUMP_FILE>        Dump headers to file
-  -H                    Print help\n
+  -h                    Print help\n
 Environment Variables:
   STABILITY_API_KEY     Your Stability API key (required)
 EOF
 
   local model='sd3.5-large-turbo'
-  local file='image.png'
   local aspect_ratio='1:1'
+  local file='image.png'
   local cfg_scale=1
   local seed=0
   local negative_prompt=''
   local dump_file=''
-  local print_help=false
 
-  while getopts "m:o:a:g:s:n:d:H" opt ; do
+  while getopts "m:a:o:g:s:n:d:h" opt ; do
     case $opt in
       m)
         model="$OPTARG" ;;
-      o)
-        file="$OPTARG" ;;
       a)
         aspect_ratio="$OPTARG" ;;
+      o)
+        file="$OPTARG" ;;
       g)
         cfg_scale="$OPTARG" ;;
       s)
@@ -44,8 +45,8 @@ EOF
         negative_prompt="$OPTARG" ;;
       d)
         dump_file="$OPTARG" ;;
-      H)
-        print_help=true ;;
+      h)
+        echo -e "$help" ; exit 0 ;;
       *)
         exit 1 ;;
     esac
@@ -56,11 +57,6 @@ EOF
   local prompt=${1:-''}
   local token=${STABILITY_API_KEY:-''}
   local url="https://api.stability.ai/v2beta/stable-image/generate/sd3"
-
-  if [[ $print_help == true ]] ; then
-    echo -e "$help"
-    exit 0
-  fi
 
   if [[ -z $token ]] ; then
     echo "$0: STABILITY_API_KEY not set" >&2
